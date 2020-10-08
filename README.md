@@ -48,9 +48,9 @@ the term I will simply continue to develop additional AddOns.
 
 ## Resources
 
-Lua reference: [Programming In Lua](https://www.lua.org/pil/cover.html)
+Lua reference: [Programming In Lua](https://www.lua.org/pil/cover.html) <br />
 WoW AddOn Textbook: [World of Warcraft Programming: A Guide and Reference for Creating WoW
-Addons](http://garde.sylvanas.free.fr/ressources/Guides/Macros-Addons/Wiley-World.of.Warcraft.Programming.A.Guide.and.Reference.for.Creating.WoW.Addons.pdf)
+Addons](http://garde.sylvanas.free.fr/ressources/Guides/Macros-Addons/Wiley-World.of.Warcraft.Programming.A.Guide.and.Reference.for.Creating.WoW.Addons.pdf) <br />
 WoW API reference: [WoWWiki API Documentation](https://wowwiki.fandom.com/wiki/World_of_Warcraft_API)
 
 -------------------------------------------------------------------------------
