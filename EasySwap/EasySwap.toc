@@ -1,0 +1,5 @@
+## Interface: 80200
+## Title: Easy Swap
+## Author: Hale Obernolte
+
+EasySwap.xml

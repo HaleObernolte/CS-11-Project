@@ -1,0 +1,60 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\..\FrameXML\UI.xsd">
+	<Script file="EasySwap.lua"/>
+
+	<Button name="EasySwapButton" inherits="MagicButtonTemplate" text="EASY_SWAP" mixin="EasySwapButtonMixin" virtual="true" hidden="true">
+		<Size x="100" y="20"/>
+		<Scripts>
+			<OnClick method="OnClick"/>
+		</Scripts>
+	</Button>
+
+	<Button name="EasySwapSpecButton" inherits="MagicButtonTemplate" mixin="EasySwapSpecButtonMixin" virtual="true">
+		<Size x="200" y="20"/>
+		<Scripts>
+			<OnClick method="OnClick"/>
+		</Scripts>
+	</Button>
+
+	<Frame name="EasySwapFrame" parent="UIParent" mixin="EasySwapFrameMixin" hidden="true">
+		<Size x="300" y="475"/>
+		<Anchors>
+			<Anchor point="CENTER" relativePoint="CENTER" x="0" y="0"/>
+		</Anchors>
+		<Layers>
+			<Layer level="BORDER">
+				<Texture parentKey="topSeparator">
+					<Size x="250" y="1"/>
+					<Anchors>
+						<Anchor point="TOP" relativePoint="TOP" x="0" y="-50"/>
+					</Anchors>
+					<Color r="0.25" g="0.25" b="0.25"/>
+				</Texture>
+				<Texture parentKey="bottomSeparator">
+					<Size x="250" y="1"/>
+					<Anchors>
+						<Anchor point="BOTTOM" x="0" y="50"/>
+					</Anchors>
+					<Color r="0.25" g="0.25" b="0.25"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Frame parentKey="BG" inherits="DialogBorderTemplate"/>
+			<Frame parentKey="Header" inherits="DialogHeaderTemplate">
+				<KeyValues>
+					<KeyValue key="textString" value="EASY_SWAP" type="global"/>
+				</KeyValues>
+			</Frame>
+			<Button name="foo" parentKey="SpecButton1" inherits="EasySwapSpecButton" text="Test Change Spec">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativePoint="TOPLEFT" x="30" y="-80"/>
+				</Anchors>
+			</Button>
+		</Frames>
+		<Scripts>
+			<OnLoad method="OnLoad"/>
+			<OnEvent method="OnEvent"/>
+		</Scripts>
+	</Frame>
+</Ui>
