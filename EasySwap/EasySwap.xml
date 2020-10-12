@@ -9,12 +9,57 @@
 		</Scripts>
 	</Button>
 
-	<Button name="EasySwapSpecButton" inherits="MagicButtonTemplate" mixin="EasySwapSpecButtonMixin" virtual="true">
-		<Size x="200" y="20"/>
+	<Button name="EasySwapActivateSpecButtonTemplate" inherits="MagicButtonTemplate" text="ACTIVATE" mixin="EasySwapActivateSpecButtonMixin" virtual="true">
+		<Size x="70" y="20"/>
 		<Scripts>
 			<OnClick method="OnClick"/>
 		</Scripts>
 	</Button>
+
+	<Button name="EasySwapSaveSpecButtonTemplate" inherits="MagicButtonTemplate" text="SAVE_CURRENT_CONFIG" mixin="EasySwapSaveSpecButtonMixin" virtual="true">
+		<Size x="100" y="20"/>
+		<Scripts>
+			<OnClick method="OnClick"/>
+		</Scripts>
+	</Button>
+
+	<Frame name="EasySwapSpecTemplate" mixin="EasySwapSpecMixin" virtual="true">
+		<Size x="250" y="90"/>
+		<Layers>
+			<Layer level="ARTWORK">
+				<FontString parentKey="SpecName" inherits="GameFontNormal" justifyH="LEFT">
+					<Color r="1.0" g="1.0" b="1.0" a="1.0"/>
+					<Anchors>
+						<Anchor point="CENTER" relativePoint="TOP"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+			<Layer level="BORDER">
+				<Texture parentKey="BottomSeparator">
+					<Size x="200" y="3"/>
+					<Anchors>
+						<Anchor point="BOTTOM" x="0" y="0"/>
+					</Anchors>
+					<Color r="0.25" g="0.25" b="0.25"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Button parentKey="ActivateButton" inherits="EasySwapActivateSpecButtonTemplate">
+				<Anchors>
+					<Anchor point="BOTTOMLEFT" relativeKey="$parent.BottomSeparator" relativePoint="BOTTOMLEFT" x="17" y="10"/>
+				</Anchors>
+			</Button>
+			<Button parentKey="SaveButton" inherits="EasySwapSaveSpecButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.ActivateButton" relativePoint="TOPRIGHT" x="0" y="0"/>
+				</Anchors>
+			</Button>
+		</Frames>
+		<Scripts>
+			<OnLoad method="OnLoad"/>
+		</Scripts>
+	</Frame>
 
 	<Frame name="EasySwapFrame" parent="UIParent" mixin="EasySwapFrameMixin" hidden="true">
 		<Size x="300" y="475"/>
@@ -23,17 +68,17 @@
 		</Anchors>
 		<Layers>
 			<Layer level="BORDER">
-				<Texture parentKey="topSeparator">
+				<Texture parentKey="TopSeparator">
 					<Size x="250" y="1"/>
 					<Anchors>
-						<Anchor point="TOP" relativePoint="TOP" x="0" y="-50"/>
+						<Anchor point="TOP" relativePoint="TOP" x="0" y="-30"/>
 					</Anchors>
 					<Color r="0.25" g="0.25" b="0.25"/>
 				</Texture>
-				<Texture parentKey="bottomSeparator">
+				<Texture parentKey="BottomSeparator">
 					<Size x="250" y="1"/>
 					<Anchors>
-						<Anchor point="BOTTOM" x="0" y="50"/>
+						<Anchor point="BOTTOM" x="0" y="20"/>
 					</Anchors>
 					<Color r="0.25" g="0.25" b="0.25"/>
 				</Texture>
@@ -46,11 +91,38 @@
 					<KeyValue key="textString" value="EASY_SWAP" type="global"/>
 				</KeyValues>
 			</Frame>
-			<Button name="foo" parentKey="SpecButton1" inherits="EasySwapSpecButton" text="Test Change Spec">
+			<Frame parentKey="Spec1" inherits="EasySwapSpecTemplate" parentArray="EasySwapSpecs">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativePoint="TOPLEFT" x="30" y="-80"/>
+					<Anchor point="TOP" relativeKey="$parent.TopSeparator" relativePoint="BOTTOM" x="0" y="-10"/>
 				</Anchors>
-			</Button>
+				<KeyValues>
+					<KeyValue key="configNumber" value="1" type="number"/>
+				</KeyValues>
+			</Frame>
+			<Frame parentKey="Spec2" inherits="EasySwapSpecTemplate" parentArray="EasySwapSpecs">
+				<Anchors>
+					<Anchor point="TOP" relativeKey="$parent.Spec1" relativePoint="BOTTOM" x="0" y="-10"/>
+				</Anchors>
+				<KeyValues>
+					<KeyValue key="configNumber" value="2" type="number"/>
+				</KeyValues>
+			</Frame>
+			<Frame parentKey="Spec3" inherits="EasySwapSpecTemplate" parentArray="EasySwapSpecs">
+				<Anchors>
+					<Anchor point="TOP" relativeKey="$parent.Spec2" relativePoint="BOTTOM" x="0" y="-10"/>
+				</Anchors>
+				<KeyValues>
+					<KeyValue key="configNumber" value="3" type="number"/>
+				</KeyValues>
+			</Frame>
+			<Frame parentKey="Spec4" inherits="EasySwapSpecTemplate" parentArray="EasySwapSpecs">
+				<Anchors>
+					<Anchor point="TOP" relativeKey="$parent.Spec3" relativePoint="BOTTOM" x="0" y="-10"/>
+				</Anchors>
+				<KeyValues>
+					<KeyValue key="configNumber" value="4" type="number"/>
+				</KeyValues>
+			</Frame>
 		</Frames>
 		<Scripts>
 			<OnLoad method="OnLoad"/>
