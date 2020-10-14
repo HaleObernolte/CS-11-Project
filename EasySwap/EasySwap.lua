@@ -3,6 +3,12 @@
 EASY_SWAP = "Easy Swap";
 SAVE_CURRENT_CONFIG = "Save Talents";
 TALENT_CONFIGURATION = "Talent Configuration ";
+CLEAR_SPEC = "Clear";
+
+local EASY_SWAP_OFSX = 10;
+local EASY_SWAP_OFSY = 4;
+
+AUTO_SHOW_EASY_SWAP = false;
 
 SPEC_CONFIGURATIONS = {
 	{},
@@ -17,6 +23,8 @@ SPEC_CONFIGURATIONS = {
 -- Hooks ---------------------------------------------------------------
 
 local OldPlayerTalentFrameTab_OnClick;
+local TALENT_FRAME_BASE_WIDTH = 646;
+local TALENT_FRAME_EXPANSION_EXTRA_WIDTH = 137;
 
 -- End Hooks -----------------------------------------------------------
 
@@ -48,19 +56,80 @@ local function OnLoadTalentUI()
 		OldPlayerTalentFrameTab_OnClick = PlayerTalentFrameTab_OnClick;
 	end
 	PlayerTalentFrameTab_OnClick = function(self)
-		OldPlayerTalentFrameTab_OnClick(self);
 		local showEasySwapButton = self:GetID() == 2;
 		PlayerTalentFrame.EasySwapButton:SetShown(showEasySwapButton);
-		local showEasySwapFrame = self:GetID() == 2 and PlayerTalentFrame.IsEasySwapShown;
+		local showEasySwapFrame = self:GetID() == 2 and AUTO_SHOW_EASY_SWAP;
 		PlayerTalentFrame.EasySwapFrame:SetShown(showEasySwapFrame);
+		OldPlayerTalentFrameTab_OnClick(self);
+	end
+
+ 	PlayerTalentFrame_SetExpanded = function(expanded)
+ 		local extraWidth = EasySwapFrame:IsShown() and 310 or 0;
+		if (expanded) then
+			PlayerTalentFrame:SetWidth(TALENT_FRAME_BASE_WIDTH + TALENT_FRAME_EXPANSION_EXTRA_WIDTH);
+			PlayerTalentFrameTalentsTRCorner:SetPoint("TOPRIGHT", -140, -2);
+			PlayerTalentFrameTalentsBRCorner:SetPoint("BOTTOMRIGHT", -140, 2);
+			PlayerTalentFrameTalents.PvpTalentFrame:Show();
+			if (PlayerTalentFrameTalents.PvpTalentFrame.TalentList:IsShown()) then
+				SetUIPanelAttribute(PlayerTalentFrame, "width", PlayerTalentFrame.superExpandedPanelWidth + extraWidth);
+				PlayerTalentFrame.currentExpansionWidth = PlayerTalentFrame.superExpandedPanelWidth;
+			else
+				SetUIPanelAttribute(PlayerTalentFrame, "width", PlayerTalentFrame.expandedPanelWidth + extraWidth);
+				PlayerTalentFrame.currentExpansionWidth = PlayerTalentFrame.expandedPanelWidth;
+			end
+		else
+			PlayerTalentFrame:SetWidth(TALENT_FRAME_BASE_WIDTH);
+			PlayerTalentFrameTalentsTRCorner:SetPoint("TOPRIGHT", -3, -2);
+			PlayerTalentFrameTalentsBRCorner:SetPoint("BOTTOMRIGHT", -3, 2);
+			PlayerTalentFrameTalents.PvpTalentFrame:Hide();
+			SetUIPanelAttribute(PlayerTalentFrame, "width", PlayerTalentFrame.basePanelWidth + extraWidth);
+			PlayerTalentFrame.currentExpansionWidth = PlayerTalentFrame.basePanelWidth;
+		end
+		UpdateUIPanelPositions(PlayerTalentFrame);
+	end
+
+	PlayerTalentFrameTalents.PvpTalentFrame.SelectSlot = function(self, slot)
+		PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
+		if (self.selectedSlotIndex) then
+			local sameSelected = self.selectedSlotIndex == slot.slotIndex;
+			self:UnselectSlot();
+			if (sameSelected) then
+				return;
+			end
+		end
+		local extraWidth = EasySwapFrame:IsShown() and 310 or 0;
+		SetUIPanelAttribute(PlayerTalentFrame, "width", PlayerTalentFrame.superExpandedPanelWidth + extraWidth);
+		UpdateUIPanelPositions(PlayerTalentFrame);
+		EasySwapFrame:ClearAllPoints();
+		EasySwapFrame:SetPoint("TOPLEFT", PlayerTalentFrame, "TOPRIGHT", EASY_SWAP_OFSX + 190, EASY_SWAP_OFSY);
+		self.selectedSlotIndex = slot.slotIndex;
+		slot.Arrow:Show();
+		HybridScrollFrame_SetOffset(self.TalentList.ScrollFrame, 0);
+		self.TalentList:Update();
+		self.TalentList:Show();
+	end
+
+	PlayerTalentFrameTalents.PvpTalentFrame.UnselectSlot = function(self)
+		if (not self.selectedSlotIndex) then
+			return;
+		end
+
+		local slot = self.Slots[self.selectedSlotIndex];
+
+		slot.Arrow:Hide();
+		self.TalentList:Hide();
+		self.selectedSlotIndex = nil;
+		EasySwapFrame:ClearAllPoints();
+		EasySwapFrame:SetPoint("TOPLEFT", PlayerTalentFrame, "TOPRIGHT", EASY_SWAP_OFSX, EASY_SWAP_OFSY);
+		local extraWidth = EasySwapFrame:IsShown() and 310 or 0;
+		SetUIPanelAttribute(PlayerTalentFrame, "width", PlayerTalentFrame.expandedPanelWidth + extraWidth);
+		UpdateUIPanelPositions(PlayerTalentFrame);
 	end
 
 	EasySwapFrame:SetParent(PlayerTalentFrame);
 	PlayerTalentFrame.EasySwapFrame = EasySwapFrame;
 	EasySwapFrame:ClearAllPoints();
-	ofsX = 10;
-	ofsY = 4;
-	EasySwapFrame:SetPoint("TOPLEFT", PlayerTalentFrame, "TOPRIGHT", ofsX, ofsY);
+	EasySwapFrame:SetPoint("TOPLEFT", PlayerTalentFrame, "TOPRIGHT", EASY_SWAP_OFSX, EASY_SWAP_OFSY);
 end
 
 local function SaveCurrentConfig(spec, config)
@@ -72,6 +141,10 @@ local function SaveCurrentConfig(spec, config)
 			local selected = talentButton.knownSelection:IsShown();
 			if ( selected ) then
 				newConfig[tier] = col;
+				SPEC_CONFIGURATIONS["Spec"..spec.."Tier"..tier.."Config"..config.."Info"] = {
+					ID = talentButton:GetID();
+					icon = talentButton.icon:GetTexture();
+				};
 				setTalents = true;
 				break;
 			end
@@ -131,7 +204,10 @@ function EasySwapButtonMixin:OnClick(button, up)
 	local easySwapFrame = parentFrame.EasySwapFrame;
 	local show = not easySwapFrame:IsShown();
 	easySwapFrame:SetShown(show);
-	parentFrame.IsEasySwapShown = show;
+	AUTO_SHOW_EASY_SWAP = show;
+	local extraWidth = show and 310 or 0;
+	SetUIPanelAttribute(PlayerTalentFrame, "width", PlayerTalentFrame.currentExpansionWidth + extraWidth);
+	UpdateUIPanelPositions(PlayerTalentFrame);
 end
 
 
@@ -153,10 +229,54 @@ end
 EasySwapSaveSpecButtonMixin = {};
 
 function EasySwapSaveSpecButtonMixin:OnClick(button, down)
+	local parent = self:GetParent();
 	local currSpec = GetSpecialization();
-	local configNumber = self:GetParent().configNumber;
+	local configNumber = parent.configNumber;
 	SaveCurrentConfig(currSpec, configNumber);
-	self:GetParent():Update();
+	parent:Update();
+end
+
+
+EasySwapClearSpecButtonMixin = {};
+
+function EasySwapClearSpecButtonMixin:OnClick()
+	local parent = self:GetParent();
+	local currSpec = GetSpecialization();
+	local configNumber = parent.configNumber;
+	SPEC_CONFIGURATIONS[currSpec][configNumber] = nil;
+	for tier = 1, MAX_TALENT_TIERS do
+		SPEC_CONFIGURATIONS["Spec"..currSpec.."Tier"..tier.."Config"..configNumber.."Info"] = nil;
+	end
+	parent:Update();
+end
+
+
+EasySwapTalentChoiceMixin = {};
+
+function EasySwapTalentChoiceMixin:OnEnter()
+	GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+	GameTooltip:SetTalent(self.ID);
+	GameTooltip:Show();
+end
+
+function EasySwapTalentChoiceMixin:OnLeave()
+	GameTooltip:Hide();
+end
+
+function EasySwapTalentChoiceMixin:Update()
+	local spec = GetSpecialization();
+	local tier = self.rowNumber;
+	local config = self:GetParent().configNumber;
+	local info = SPEC_CONFIGURATIONS["Spec"..spec.."Tier"..tier.."Config"..config.."Info"];
+	if ( info ) then
+		self:Show();
+		self.ID = info.ID;
+		self.Icon:SetTexture(info.icon);
+		local tierLevel = tier == 1 and 15 or 25 + 5 * (tier - 2);
+		self.TierLevel:SetText(tierLevel);
+	else
+		self:Hide();
+	end
 end
 
 
@@ -174,6 +294,10 @@ function EasySwapSpecMixin:Update()
 		self.ActivateButton:Enable();
 	else
 		self.ActivateButton:Disable();
+	end
+
+	for _, choice in ipairs(self.TalentChoices) do
+		choice:Update();
 	end
 end
 

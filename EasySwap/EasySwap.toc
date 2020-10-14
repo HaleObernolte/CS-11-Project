@@ -1,6 +1,7 @@
-## Interface: 80200
+## Interface: 90001
 ## Title: Easy Swap
 ## Author: Hale Obernolte
 ## SavedVariablesPerCharacter: SPEC_CONFIGURATIONS
+## SavedVariables: AUTO_SHOW_EASY_SWAP
 
 EasySwap.xml

@@ -23,6 +23,37 @@
 		</Scripts>
 	</Button>
 
+	<Button name="EasySwapClearSpecButtonTemplate" inherits="MagicButtonTemplate" text="CLEAR_SPEC" mixin="EasySwapClearSpecButtonMixin" virtual="true">
+		<Size x="70" y="20"/>
+		<Scripts>
+			<OnClick method="OnClick"/>
+		</Scripts>
+	</Button>
+
+	<Frame name="EasySwapTalentChoiceTemplate" mixin="EasySwapTalentChoiceMixin" virtual="true">
+		<Size x="23" y="32"/>
+		<Layers>
+			<Layer level="ARTWORK">
+				<Texture parentKey="Icon">
+					<Size x="23" y="23"/>
+					<Anchors>
+						<Anchor point="CENTER" relativePoint="CENTER"/>
+					</Anchors>
+				</Texture>
+				<FontString parentKey="TierLevel" inherits="GameFontNormalSmall" justifyH="LEFT">
+					<Color r="1.0" g="1.0" b="1.0" a="1.0"/>
+					<Anchors>
+						<Anchor point="TOP" relativeKey="$parent.Icon" relativePoint="BOTTOM" x="0" y="-5"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Scripts>
+			<OnEnter method="OnEnter"/>
+			<OnLeave method="OnLeave"/>
+		</Scripts>
+	</Frame>
+
 	<Frame name="EasySwapSpecTemplate" mixin="EasySwapSpecMixin" virtual="true">
 		<Size x="250" y="90"/>
 		<Layers>
@@ -45,16 +76,77 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<Button parentKey="ActivateButton" inherits="EasySwapActivateSpecButtonTemplate">
-				<Anchors>
-					<Anchor point="BOTTOMLEFT" relativeKey="$parent.BottomSeparator" relativePoint="BOTTOMLEFT" x="17" y="10"/>
-				</Anchors>
-			</Button>
 			<Button parentKey="SaveButton" inherits="EasySwapSaveSpecButtonTemplate">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeKey="$parent.ActivateButton" relativePoint="TOPRIGHT" x="0" y="0"/>
+					<Anchor point="BOTTOM" relativeKey="$parent.BottomSeparator" relativePoint="TOP" x="0" y="10"/>
 				</Anchors>
 			</Button>
+			<Button parentKey="ActivateButton" inherits="EasySwapActivateSpecButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPRIGHT" relativeKey="$parent.SaveButton" relativePoint="TOPLEFT" x="0" y="0"/>
+				</Anchors>
+			</Button>
+			<Button parentKey="ClearButton" inherits="EasySwapClearSpecButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.SaveButton" relativePoint="TOPRIGHT" x="0" y="0"/>
+				</Anchors>
+			</Button>
+			<Frame parentKey="TalentChoice1" inherits="EasySwapTalentChoiceTemplate" parentArray="TalentChoices">
+				<KeyValues>
+					<KeyValue key="rowNumber" value="1" type="number"/>
+				</KeyValues>
+				<Anchors>
+					<Anchor point="CENTER" relativeKey="$parent.ActivateButton" relativePoint="TOPLEFT" x="40" y="30"/>
+				</Anchors>
+			</Frame>
+			<Frame parentKey="TalentChoice2" inherits="EasySwapTalentChoiceTemplate" parentArray="TalentChoices">
+				<KeyValues>
+					<KeyValue key="rowNumber" value="2" type="number"/>
+				</KeyValues>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.TalentChoice1" relativePoint="TOPRIGHT" x="3" y="0"/>
+				</Anchors>
+			</Frame>
+			<Frame parentKey="TalentChoice3" inherits="EasySwapTalentChoiceTemplate" parentArray="TalentChoices">
+				<KeyValues>
+					<KeyValue key="rowNumber" value="3" type="number"/>
+				</KeyValues>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.TalentChoice2" relativePoint="TOPRIGHT" x="3" y="0"/>
+				</Anchors>
+			</Frame>
+			<Frame parentKey="TalentChoice4" inherits="EasySwapTalentChoiceTemplate" parentArray="TalentChoices">
+				<KeyValues>
+					<KeyValue key="rowNumber" value="4" type="number"/>
+				</KeyValues>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.TalentChoice3" relativePoint="TOPRIGHT" x="3" y="0"/>
+				</Anchors>
+			</Frame>
+			<Frame parentKey="TalentChoice5" inherits="EasySwapTalentChoiceTemplate" parentArray="TalentChoices">
+				<KeyValues>
+					<KeyValue key="rowNumber" value="5" type="number"/>
+				</KeyValues>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.TalentChoice4" relativePoint="TOPRIGHT" x="3" y="0"/>
+				</Anchors>
+			</Frame>
+			<Frame parentKey="TalentChoice6" inherits="EasySwapTalentChoiceTemplate" parentArray="TalentChoices">
+				<KeyValues>
+					<KeyValue key="rowNumber" value="6" type="number"/>
+				</KeyValues>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.TalentChoice5" relativePoint="TOPRIGHT" x="3" y="0"/>
+				</Anchors>
+			</Frame>
+			<Frame parentKey="TalentChoice7" inherits="EasySwapTalentChoiceTemplate" parentArray="TalentChoices">
+				<KeyValues>
+					<KeyValue key="rowNumber" value="7" type="number"/>
+				</KeyValues>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.TalentChoice6" relativePoint="TOPRIGHT" x="3" y="0"/>
+				</Anchors>
+			</Frame>
 		</Frames>
 		<Scripts>
 			<OnLoad method="OnLoad"/>
