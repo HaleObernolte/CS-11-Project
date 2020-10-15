@@ -4,6 +4,8 @@ EASY_SWAP = "Easy Swap";
 SAVE_CURRENT_CONFIG = "Save Talents";
 TALENT_CONFIGURATION = "Talent Configuration ";
 CLEAR_SPEC = "Clear";
+SLASH_EASYSWAP1 = "/easyswap";
+SLASH_EASYSWAP2 = "/es";
 
 local EASY_SWAP_OFSX = 10;
 local EASY_SWAP_OFSY = 4;
@@ -159,6 +161,36 @@ local function GetTalentButton(row, col)
 	return _G["PlayerTalentFrameTalentsTalentRow"..row.."Talent"..col];
 end
 
+local function ActivateConfiguration(spec, config)
+	local configuration = SPEC_CONFIGURATIONS[spec][config];
+	if ( configuration ) then
+		for row, col in ipairs(configuration) do
+			local talentButton = GetTalentButton(row, col);
+			PlayerTalentFrameTalent_OnClick(talentButton, "LeftButton");
+		end
+	end
+end
+
+local function PrintUsage()
+	print("|cFF0000FF-------------------------------------------------------------------------------------|r");
+	print("|cFF42e0f5Easy Swap Usage:|r");
+	print('|cFFf59342Type (or macro) "/easyswap n" to switch to talent configuration n.|r');
+	print("|cFFf59342Example:|r /easyswap 2");
+	print("|cFF0000FF-------------------------------------------------------------------------------------|r");
+end
+
+local function HandleSlash(msg, editbox)
+	local configNumber = tonumber(msg);
+	if ( configNumber and configNumber >= 1 and configNumber <= 4 ) then
+		local currSpec = GetSpecialization();
+		ActivateConfiguration(currSpec, configNumber);
+	else
+		PrintUsage();
+	end
+end
+
+SlashCmdList["EASYSWAP"] = HandleSlash;
+
 
 local EasySwapFrameEvents = {
 	"ADDON_LOADED",
@@ -216,13 +248,7 @@ EasySwapActivateSpecButtonMixin = {};
 function EasySwapActivateSpecButtonMixin:OnClick(button, down)
 	local currSpec = GetSpecialization();
 	local configNumber = self:GetParent().configNumber;
-	local configuration = SPEC_CONFIGURATIONS[currSpec][configNumber];
-	if ( configuration ) then
-		for row, col in ipairs(configuration) do
-			local talentButton = GetTalentButton(row, col);
-			PlayerTalentFrameTalent_OnClick(talentButton, "LeftButton");
-		end
-	end
+	ActivateConfiguration(currSpec, configNumber);
 end
 
 
@@ -283,7 +309,7 @@ end
 EasySwapSpecMixin = {};
 
 function EasySwapSpecMixin:OnLoad()
-	self.SpecName:SetText(TALENT_CONFIGURATION..self.configNumber);
+	self.NameBox.SpecName:SetText(TALENT_CONFIGURATION..self.configNumber);
 end
 
 function EasySwapSpecMixin:Update()
@@ -292,13 +318,58 @@ function EasySwapSpecMixin:Update()
 	local configuration = SPEC_CONFIGURATIONS[currSpec][configNumber];
 	if ( configuration ) then
 		self.ActivateButton:Enable();
+		self.EditNameButton:Show();
+		if ( configuration.name ) then
+			self.NameBox.SpecName:SetText(configuration.name);
+		end
 	else
 		self.ActivateButton:Disable();
+		self.EditNameButton:Hide();
+		self.NameBox.SpecName:SetText(TALENT_CONFIGURATION..self.configNumber);
 	end
 
 	for _, choice in ipairs(self.TalentChoices) do
 		choice:Update();
 	end
+end
+
+
+EasySwapEditNameButtonMixin = {};
+
+function EasySwapEditNameButtonMixin:OnClick()
+	local nameBox = self:GetParent().NameBox;
+	nameBox.NameEditBox:SetText(nameBox.SpecName:GetText());
+	nameBox.SpecName:Hide();
+	self:Hide();
+	nameBox.NameEditBox:HighlightText();
+	nameBox.NameEditBox:Show();
+end
+
+
+ConfigurationNameEditBoxMixin = {};
+
+function ConfigurationNameEditBoxMixin:OnEnterPressed()
+	local nameBox = self:GetParent();
+	local config = nameBox:GetParent();
+	local currSpec = GetSpecialization();
+	local configNumber = config.configNumber;
+	local configuration = SPEC_CONFIGURATIONS[currSpec][configNumber];
+	local text = self:GetText()
+	if ( configuration and text ~= "" ) then
+		configuration.name = text;
+	end
+	nameBox.SpecName:Show();
+	config.EditNameButton:Show();
+	self:Hide();
+	config:Update();
+end
+
+function ConfigurationNameEditBoxMixin:OnEscapePressed()
+	local nameBox = self:GetParent();
+	local config = nameBox:GetParent();
+	nameBox.SpecName:Show();
+	config.EditNameButton:Show();
+	self:Hide();
 end
 
 -- End Core Code -------------------------------------------------------

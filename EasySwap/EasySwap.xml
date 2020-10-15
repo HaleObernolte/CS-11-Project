@@ -54,17 +54,38 @@
 		</Scripts>
 	</Frame>
 
-	<Frame name="EasySwapSpecTemplate" mixin="EasySwapSpecMixin" virtual="true">
-		<Size x="250" y="90"/>
+	<Frame name="EasySwapConfigurationNameTemplate" virtual="true">
+		<Size x="200" y="10"/>
 		<Layers>
 			<Layer level="ARTWORK">
 				<FontString parentKey="SpecName" inherits="GameFontNormal" justifyH="LEFT">
 					<Color r="1.0" g="1.0" b="1.0" a="1.0"/>
 					<Anchors>
-						<Anchor point="CENTER" relativePoint="TOP"/>
+						<Anchor point="CENTER" relativePoint="TOP" x="0" y="0"/>
 					</Anchors>
 				</FontString>
 			</Layer>
+		</Layers>
+		<Frames>
+			<EditBox parentKey="NameEditBox" letters="24" historyLines="1" mixin="ConfigurationNameEditBoxMixin" hidden="true">
+				<Size x="150" y="30"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeKey="$parent.SpecName" relativePoint="LEFT"/>
+				</Anchors>
+				<Scripts>
+					<OnEnterPressed method="OnEnterPressed"/>
+					<OnEscapePressed method="OnEscapePressed"/>
+				</Scripts>
+				<FontString inherits="GameFontNormal">
+					<Color r="1.0" g="1.0" b="1.0" a="1.0"/>
+				</FontString>
+			</EditBox>
+		</Frames>
+	</Frame>
+
+	<Frame name="EasySwapSpecTemplate" mixin="EasySwapSpecMixin" virtual="true">
+		<Size x="250" y="90"/>
+		<Layers>
 			<Layer level="BORDER">
 				<Texture parentKey="BottomSeparator">
 					<Size x="200" y="3"/>
@@ -76,6 +97,30 @@
 			</Layer>
 		</Layers>
 		<Frames>
+			<Frame parentKey="NameBox" inherits="EasySwapConfigurationNameTemplate">
+				<Anchors>
+					<Anchor point="CENTER" relativePoint="TOP" x="0" y="-5"/>
+				</Anchors>
+			</Frame>
+			<Button parentKey="EditNameButton" mixin="EasySwapEditNameButtonMixin">
+				<Size x="16" y="16"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeKey="$parent.NameBox.SpecName" relativePoint="RIGHT" x="10" y="0"/>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<Texture parentKey="Icon" file="Interface/GossipFrame/BinderGossipIcon">
+							<Size x="16" y="16"/>
+							<Anchors>
+								<Anchor point="CENTER"/>
+							</Anchors>
+						</Texture>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnClick method="OnClick"/>
+				</Scripts>
+			</Button>
 			<Button parentKey="SaveButton" inherits="EasySwapSaveSpecButtonTemplate">
 				<Anchors>
 					<Anchor point="BOTTOM" relativeKey="$parent.BottomSeparator" relativePoint="TOP" x="0" y="10"/>
