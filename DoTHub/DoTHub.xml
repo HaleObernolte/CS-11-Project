@@ -1,0 +1,294 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\..\FrameXML\UI.xsd">
+	<Script file="DoTHub.lua"/>
+
+	<Button name="DoTHubEnemyFrameTemplate" inherits="SecureUnitButtonTemplate" mixin="DoTHubEnemyFrameMixin" virtual="true" hidden="true">
+		<Size x="232" y="100"/>
+		<HitRectInsets>
+			<AbsInset left="0" right="40" top="10" bottom="20"/>
+		</HitRectInsets>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture name="$parentFlash" file="Interface\TargetingFrame\UI-TargetingFrame-Flash" hidden="true">
+					<Size x="242" y="93"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="-24" y="0"/>
+					</Anchors>
+					<TexCoords left="0" right="0.9453125" top="0" bottom="0.181640625"/>
+				</Texture>
+				<Texture name="$parentBackground" parentKey="Background">
+					<Size x="119" y="41"/>
+					<Anchors>
+						<Anchor point="BOTTOMLEFT" x="7" y="35"/>
+					</Anchors>
+					<Color r="0" g="0" b="0" a="0.5"/>
+				</Texture>A
+			</Layer>
+			<Layer level="BORDER">
+				<Texture name="$parentNameBackground" file="Interface\TargetingFrame\UI-TargetingFrame-LevelBackground" parentKey="nameBackground">
+					<Size x="119" y="19"/>
+					<Anchors>
+						<Anchor point="TOPRIGHT" x="-106" y="-22"/>
+					</Anchors>
+				</Texture>
+				<Texture name="$parentPortrait">
+					<Size x="64" y="64"/>
+					<Anchors>
+						<Anchor point="TOPRIGHT" x="-42" y="-12"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+			<Layer level="ARTWORK">
+				<Texture name="$parentTotalAbsorbBar" inherits="TotalAbsorbBarTemplate"/>
+			</Layer>
+			<Layer level="ARTWORK" textureSubLevel="1">
+				<Texture name="$parentMyHealPredictionBar" inherits="MyHealPredictionBarTemplate"/>
+				<Texture name="$parentOtherHealPredictionBar" inherits="OtherHealPredictionBarTemplate"/>
+				<Texture name="$parentHealAbsorbBar" inherits="HealAbsorbBarTemplate"/>
+				<Texture name="$parentHealAbsorbBarLeftShadow" inherits="HealAbsorbBarLeftShadowTemplate"/>
+				<Texture name="$parentHealAbsorbBarRightShadow" inherits="HealAbsorbBarRightShadowTemplate"/>
+				<Texture name="$parentTotalAbsorbBarOverlay" inherits="TotalAbsorbBarOverlayTemplate"/>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Frame name="$parentTextureFrame" parentKey="textureFrame" setAllPoints="true">
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture name="$parentTexture" parentKey="texture"  file="Interface\TargetingFrame\UI-TargetingFrame">
+							<TexCoords left="0.09375" right="1.0" top="0" bottom="0.78125"/>
+						</Texture>
+						<FontString name="$parentName" inherits="GameFontNormalSmall">
+							<Size x="100" y="10"/>
+							<Anchors>
+								<Anchor point="CENTER" x="-50" y="19"/>
+							</Anchors>
+						</FontString>
+						<FontString name="$parentLevelText" inherits="GameNormalNumberFont" justifyH="CENTER">
+							<!--WARNING:: This is re-anchored in code.-->
+							<Anchors>
+								<Anchor point="CENTER" x="61" y="-17"/>
+							</Anchors>
+						</FontString>
+						<FontString name="$parentDeadText" inherits="GameFontNormalSmall" text="DEAD">
+							<Anchors>
+								<Anchor point="CENTER" x="-50" y="3"/>
+							</Anchors>
+						</FontString>
+						<FontString name="$parentUnconsciousText" inherits="GameFontNormalSmall" text="UNCONSCIOUS">
+							<Anchors>
+								<Anchor point="CENTER" x="-50" y="3"/>
+							</Anchors>
+						</FontString>
+						<FontString name="$parentHealthBarText" inherits="TextStatusBarText">
+							<Anchors>
+								<Anchor point="CENTER" x="-50" y="3"/>
+							</Anchors>
+						</FontString>
+						<FontString name="$parentHealthBarTextLeft" inherits="TextStatusBarText">
+							<Anchors>
+								<Anchor point="LEFT" x="8" y="3"/>
+							</Anchors>
+						</FontString>
+						<FontString name="$parentHealthBarTextRight" inherits="TextStatusBarText">
+							<Anchors>
+								<Anchor point="RIGHT" x="-110" y="3"/>
+							</Anchors>
+						</FontString>
+						<FontString name="$parentManaBarText" inherits="TextStatusBarText">
+							<Anchors>
+								<Anchor point="CENTER" x="-50" y="-8"/>
+							</Anchors>
+						</FontString>
+						<FontString name="$parentManaBarTextLeft" inherits="TextStatusBarText">
+							<Anchors>
+								<Anchor point="LEFT" x="8" y="-8"/>
+							</Anchors>
+						</FontString>
+						<FontString name="$parentManaBarTextRight" inherits="TextStatusBarText">
+							<Anchors>
+								<Anchor point="RIGHT" x="-110" y="-8"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+					<Layer level="ARTWORK">
+						<Texture name="$parentHighLevelTexture" file="Interface\TargetingFrame\UI-TargetingFrame-Skull">
+							<Size x="16" y="16"/>
+							<Anchors>
+								<Anchor point="CENTER" relativeTo="$parentLevelText" x="0" y="0"/>
+							</Anchors>
+						</Texture>
+						<Texture name="$parentLeaderIcon" file="Interface\GroupFrame\UI-Group-LeaderIcon" hidden="true">
+							<Size x="16" y="16"/>
+							<Anchors>
+								<Anchor point="TOPRIGHT" x="-44" y="-10"/>
+							</Anchors>
+						</Texture>
+						<Texture name="$parentPVPIcon" hidden="true">
+							<Size x="64" y="64"/>
+							<Anchors>
+								<Anchor point="TOPRIGHT" x="3" y="-20"/>
+							</Anchors>
+						</Texture>
+						<Texture name="$parentPrestigePortrait" hidden="true">
+							<Size x="50" y="52"/>
+							<Anchors>
+								<Anchor point="TOPRIGHT" x="-15" y="-13"/>
+							</Anchors>
+						</Texture>
+						<Texture name="$parentRaidTargetIcon" file="Interface\TargetingFrame\UI-RaidTargetingIcons" hidden="true">
+							<Size x="26" y="26"/>
+							<Anchors>
+								<Anchor point="CENTER" relativePoint="TOPRIGHT" x="-73" y="-14"/>
+							</Anchors>
+						</Texture>
+						<Texture name="$parentQuestIcon" file="Interface\TargetingFrame\PortraitQuestBadge" hidden="true">
+							<Size x="32" y="32"/>
+							<Anchors>
+								<Anchor point="TOPLEFT" relativePoint="TOPRIGHT" x="-120" y="-12"/>
+							</Anchors>
+						</Texture>
+						<Texture name="$parentPetBattleIcon" file="Interface\TargetingFrame\PetBadge-Beast" hidden="true">
+							<Size x="32" y="32"/>
+							<Anchors>
+								<Anchor point="CENTER" relativePoint="RIGHT" x="-44" y="10"/>
+							</Anchors>
+						</Texture>
+					</Layer>
+					<Layer level="ARTWORK" textureSubLevel="1">
+						<Texture name="$parentOverAbsorbGlow" inherits="OverAbsorbGlowTemplate"/>
+						<Texture name="$parentOverHealAbsorbGlow" inherits="OverHealAbsorbGlowTemplate"/>
+						<Texture name="$parentPrestigeBadge" hidden="true">
+							<Size x="30" y="30"/>
+							<Anchors>
+								<Anchor point="CENTER" relativeTo="$parentPrestigePortrait" relativePoint="CENTER"/>
+							</Anchors>
+						</Texture>
+					</Layer>
+				</Layers>
+			</Frame>
+			<Frame name="$parentDropDown" inherits="UIDropDownMenuTemplate" id="1" hidden="true">
+				<Size x="10" y="10"/>
+				<Anchors>
+					<Anchor point="TOP" x="10" y="-60"/>
+				</Anchors>
+			</Frame>
+			<StatusBar name="$parentHealthBar" inherits="TextStatusBar" useParentLevel="true">
+				<Size x="119" y="12"/>
+				<Anchors>
+					<Anchor point="TOPRIGHT" x="-106" y="-41"/>
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						TextStatusBar_Initialize(self);
+						self.zeroText = "";
+					</OnLoad>
+					<OnValueChanged>
+						UnitFrameHealthBar_OnValueChanged(self, value);
+						TargetHealthCheck(self, value);
+					</OnValueChanged>
+					<OnSizeChanged>
+						UnitFrameHealPredictionBars_UpdateSize(self:GetParent());
+					</OnSizeChanged>
+				</Scripts>
+				<BarTexture file="Interface\TargetingFrame\UI-StatusBar"/>
+			</StatusBar>
+			<StatusBar name="$parentManaBar" inherits="TextStatusBar" useParentLevel="true">
+				<Size x="119" y="12"/>
+				<Anchors>
+					<Anchor point="TOPRIGHT" x="-106" y="-52"/>
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						TextStatusBar_Initialize(self);
+					</OnLoad>
+				</Scripts>
+				<BarTexture file="Interface\TargetingFrame\UI-StatusBar"/>
+				<BarColor r="0" g="0" b="1.0"/>
+			</StatusBar>
+			<Frame name="$parentBuffs" parentKey="buffs" hidden="true">
+				<Size x="10" y="10"/>
+			</Frame>
+			<Frame name="$parentDebuffs" parentKey="debuffs" hidden="true">
+				<Size x="10" y="10"/>
+			</Frame>
+			<Frame name="$parentNumericalThreat" hidden="true">
+				<Size x="49" y="18"/>
+				<Anchors>
+					<Anchor point="BOTTOM" relativePoint="TOP" x="-50" y="-22"/>
+				</Anchors>
+				<Layers>
+					<Layer level="BACKGROUND">
+						<FontString name="$parentValue" inherits="GameFontHighlight" text="100%" parentKey="text">
+							<Anchors>
+								<Anchor point="TOP" x="0" y="-4"/>
+							</Anchors>
+						</FontString>
+						<Texture name="$parentBG" file="Interface\TargetingFrame\UI-StatusBar" parentKey="bg">
+							<Size x="37" y="14"/>
+							<Anchors>
+								<Anchor point="TOP" x="0" y="-3"/>
+							</Anchors>
+						</Texture>
+					</Layer>
+					<Layer level="ARTWORK">
+						<Texture file="Interface\TargetingFrame\NumericThreatBorder">
+							<TexCoords left="0" right="0.765625" top="0" bottom="0.5625"/>
+						</Texture>
+					</Layer>
+				</Layers>
+			</Frame>
+		</Frames>
+		<Scripts>
+			<OnEvent function="TargetFrame_OnEvent"/>
+			<OnUpdate>
+				TargetFrame_OnUpdate(self, elapsed);
+				TargetFrame_HealthUpdate(self, elapsed, self.unit);
+			</OnUpdate>
+			<OnHide function="TargetFrame_OnHide"/>
+			<OnEnter function="UnitFrame_OnEnter"/>
+			<OnLeave function="UnitFrame_OnLeave"/>
+		</Scripts>
+	</Button>
+
+	<Frame name="DoTHubFrame" parent="UIParent" enableMouse="true" movable="true" mixin="DoTHubFrameMixin">
+		<Size x="300" y="120"/>
+		<Anchors>
+			<Anchor point="CENTER"/>
+		</Anchors>
+		<Layers>
+			<Layer level="BORDER">
+				<Texture parentKey="TopSeparator" parentArray="Textures" hidden="true">
+					<Size x="250" y="1"/>
+					<Anchors>
+						<Anchor point="TOP" relativePoint="TOP" x="0" y="-30"/>
+					</Anchors>
+					<Color r="0.25" g="0.25" b="0.25"/>
+				</Texture>
+				<Texture parentKey="BottomSeparator" parentArray="Textures" hidden="true">
+					<Size x="250" y="1"/>
+					<Anchors>
+						<Anchor point="BOTTOM" x="0" y="20"/>
+					</Anchors>
+					<Color r="0.25" g="0.25" b="0.25"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Frame parentKey="BG" inherits="DialogBorderTemplate" parentArray="Textures" hidden="true"/>
+			<Frame parentKey="Header" inherits="DialogHeaderTemplate" parentArray="Textures" hidden="true">
+				<KeyValues>
+					<KeyValue key="textString" value="DOT_HUB" type="global"/>
+				</KeyValues>
+			</Frame>
+		</Frames>
+		<Scripts>
+			<OnLoad method="OnLoad"/>
+			<OnEvent method="OnEvent"/>
+			<OnEnter method="OnEnter"/>
+			<OnLeave method="OnLeave"/>
+			<OnDragStart method="OnDragStart"/>
+			<OnDragStop method="OnDragStop"/>
+		</Scripts>
+	</Frame>
+
+</Ui>
