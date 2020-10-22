@@ -22,6 +22,8 @@ configurations.
 
 I expect that writing this AddOn will take the first 2-3 weeks of the term.
 
+Easy Swap publically available on CurseForge: https://www.curseforge.com/wow/addons/easy-swap
+
 -------------------------------------------------------------------------------
 
 ## DoT Hub
