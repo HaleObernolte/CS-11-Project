@@ -1,13 +1,25 @@
 -- Data ----------------------------------------------------------------
 
 DOT_HUB = "DoT Hub";
+DOT_HUB_WHITELIST = "DoT Hub Whitelist";
+WHITELIST_BUTTON = "Whitelist";
+USE_WHITELIST = "Use Whitelist";
+USE_WHITELIST_TOOLTIP = "When enabled, only spells manually specified in the whitelist frame will be tracked.";
 
 local NO_NAME_FOUND = "Waiting for unit data...";
 local MAX_NAMEPLATES = 5; -- TODO: Enforce
 local MAX_DEBUFFS = 6; -- TODO: Enforce
 local NAMEPLATE_PADDING = -20;
-local DOT_HUB_BASE_HEIGHT = 120;
+local DOT_HUB_BASE_HEIGHT = 160;
 local debugLinkedList = false;
+
+DOT_HUB_WHITELISTS = {
+	{},
+	{},
+	{},
+	{},
+};
+DOT_HUB_USE_WHITELIST = false;
 
 -- End Data ------------------------------------------------------------
 
@@ -40,7 +52,6 @@ local function GetNewUnitFrame(parent)
         f.PrevNode = nil;
         f.NextNode = nil;
         f.DebuffLinkedListStart = nil;
-        f.DebuffLinkedListEnd = nil;
         f.Name:SetText("");
         f:Show();
     end
@@ -69,7 +80,28 @@ local function GetNewDebuffFrame(parent)
     return f;
 end
 
-local function PrintLinkedList(listStart, listEnd)
+local function CheckLinkedList(listStart)
+	local currNode = listStart;
+	local seenNodes = {};
+	while ( currNode ) do
+		for _, node in ipairs(seenNodes) do
+			if ( node == currNode ) then
+				print("|cFFFF0000DoT Hub Error: Node duplicated in linked list.");
+			end
+		end
+		if ( currNode.PrevNode == currNode ) then
+			print("|cFFFF0000DoT Hub Error: Node points to itself in PrevNode.");
+		end
+		if ( currNode.NextNode == currNode ) then
+			print("|cFFFF0000DoT Hub Error: Node points to itself in NextNode.");
+		end
+
+		tinsert(seenNodes, currNode);
+		currNode = currNode.NextNode;
+	end
+end
+
+local function PrintLinkedList(listStart)
 	local currNode = listStart;
 	local printed = false;
 	if ( currNode and currNode.GetGUID ) then
@@ -98,55 +130,51 @@ local function PrintLinkedList(listStart, listEnd)
 end
 
 
-local function LinkedListAddBack(f, listStart, listEnd)
+local function LinkedListAddFront(f, listStart)
 	if ( debugLinkedList ) then
 		print("|cFF00FF00Adding node at:|r", f);
 	end
-	f.PrevNode = listEnd;
-	f.NextNode = nil;
 
-	if ( listEnd ) then
-		listEnd.NextNode = f;
+	f.PrevNode = nil;
+	f.NextNode = listStart;
+	if ( listStart ) then
+		listStart.PrevNode = f;
 	end
+	listStart = f;
 
-	if ( not listStart ) then
-		listStart = f;
-	end
-
-	listEnd = f;
 	if ( debugLinkedList ) then
-		PrintLinkedList(listStart, listEnd);
+		CheckLinkedList(listStart);
+		PrintLinkedList(listStart);
 	end
-	return listStart, listEnd;
+	return listStart;
 end
 
-local function LinkedListRemove(f, listStart, listEnd)
+local function LinkedListRemove(f, listStart)
 	if ( debugLinkedList ) then
 		print("|cFF00FF00Removing node at:|r", f);
 	end
-	local currNode = listStart;
-	while ( currNode ) do
-		if ( currNode == f) then
-			if ( currNode.PrevNode ) then
-				currNode.PrevNode.NextNode = currNode.NextNode;
-			else
-				listStart = currNode.NextNode;
-			end
-
-			if ( currNode.NextNode ) then
-				currNode.NextNode.PrevNode = currNode.PrevNode;
-			else
-				listEnd = currNode.PrevNode;
-			end
-			break;
-		end
-
-		currNode = currNode.NextNode;
+	
+	if ( not f or not listStart ) then
+		return;
 	end
+
+	if ( listStart == f ) then
+		listStart = f.NextNode;
+	end
+
+	if ( f.NextNode ) then
+		f.NextNode.PrevNode = f.PrevNode;
+	end
+
+	if ( f.PrevNode ) then
+		f.PrevNode.NextNode = f.NextNode;
+	end
+
 	if ( debugLinkedList ) then
-		PrintLinkedList(listStart, listEnd);
+		CheckLinkedList(listStart);
+		PrintLinkedList(listStart);
 	end
-	return listStart, listEnd;
+	return listStart;
 end
 
 
@@ -184,6 +212,12 @@ local function UpdateUnitGUIDCaches(unit)
 end
 
 
+local function GetCurrentWhitelist()
+	local spec = GetSpecialization();
+	return DOT_HUB_WHITELISTS[spec];
+end
+
+
 DoTHubUnitFrameMixin = {};
 
 function DoTHubUnitFrameMixin:AddDebuff(spellId)
@@ -192,9 +226,10 @@ function DoTHubUnitFrameMixin:AddDebuff(spellId)
 		self.NumDebuffs = self.NumDebuffs and self.NumDebuffs + 1 or 1;
 		debuffFrame = GetNewDebuffFrame(self);
 		self.Debuffs[spellId] = debuffFrame;
-		self.DebuffsLinkedListStart, self.DebuffsLinkedListEnd = LinkedListAddBack(debuffFrame, self.DebuffsLinkedListStart, self.DebuffsLinkedListEnd);
-		if ( debuffFrame.PrevNode ) then
-			debuffFrame:SetPoint("BOTTOMLEFT", debuffFrame.PrevNode, "BOTTOMRIGHT", 0, 0);
+		self.DebuffsLinkedListStart = LinkedListAddFront(debuffFrame, self.DebuffsLinkedListStart);
+		debuffFrame:ClearAllPoints();
+		if ( debuffFrame.NextNode ) then
+			debuffFrame:SetPoint("BOTTOMLEFT", debuffFrame.NextNode, "BOTTOMRIGHT", 0, 0);
 		else
 			debuffFrame:SetPoint("CENTER", self, "LEFT", -20, -20);
 		end 
@@ -211,18 +246,22 @@ function DoTHubUnitFrameMixin:RemoveDebuff(spellId)
 	end
 
 	self.NumDebuffs = self.NumDebuffs - 1;
-	local currFrame = debuffFrame;
-	while ( currFrame.NextNode ) do
-		currFrame.NextNode:ClearAllPoints();
-		if ( currFrame.PrevNode ) then
-			currFrame.NextNode:SetPoint("BOTTOMLEFT", debuffFrame.PrevNode, "BOTTOMRIGHT", 0, 0);
-		else
-			currFrame.NextNode:SetPoint("CENTER", self, "LEFT", -20, -20);
+	local currFrame = debuffFrame.PrevNode;
+	while ( currFrame ) do
+		currFrame:ClearAllPoints();
+		local relativeTo = currFrame.NextNode;
+		if ( currFrame.NextNode == debuffFrame ) then
+			relativeTo = relativeTo.NextNode
 		end
-		currFrame = currFrame.NextNode;
+		if ( relativeTo ) then
+			currFrame:SetPoint("BOTTOMLEFT", relativeTo, "BOTTOMRIGHT", 0, 0);
+		else
+			currFrame:SetPoint("CENTER", self, "LEFT", -20, -20);
+		end
+		currFrame = currFrame.PrevNode;
 	end
 	self.Debuffs[spellId] = nil;
-	self.DebuffsLinkedListStart, self.DebuffLinkedListEnd = LinkedListRemove(debuffFrame, self.DebuffsLinkedListStart, self.DebuffLinkedListEnd);
+	self.DebuffsLinkedListStart = LinkedListRemove(debuffFrame, self.DebuffsLinkedListStart);
 	RemoveDebuffFrame(debuffFrame);
 
 	if ( self.NumDebuffs == 0 ) then
@@ -265,12 +304,13 @@ function DoTHubUnitFrameMixin:ClearDebuffs()
 	end
 	self.Debuffs = {};
 	self.DebuffsLinkedListStart = nil;
-	self.DebuffsLinkedListEnd = nil;
+	self.NumDebuffs = 0;
 end
 
 
 local DoTHubFrameEvents = {
 	"COMBAT_LOG_EVENT_UNFILTERED",
+	"PLAYER_REGEN_DISABLED",
 	"PLAYER_REGEN_ENABLED",
 	"UNIT_TARGET",
 	"NAME_PLATE_UNIT_ADDED",
@@ -280,7 +320,6 @@ local DoTHubFrameEvents = {
 DoTHubFrameMixin = {};
 
 function DoTHubFrameMixin:OnLoad()
-	self:OnEnter(); -- Always show frame for now
 	self.UnitFrames = {};
 	self:ClearAllPoints();
 	self:RegisterForDrag("LeftButton");
@@ -292,16 +331,19 @@ end
 function DoTHubFrameMixin:OnEvent(event, ...)
 	if ( event == "COMBAT_LOG_EVENT_UNFILTERED" ) then
 		local _, subEvent, _, sourceGUID, _, _, _, destGUID,
-			  _, _, _, spellId, spellName, _, auraType  = CombatLogGetCurrentEventInfo();
+			  destName, _, _, spellId, spellName, _, auraType  = CombatLogGetCurrentEventInfo();
 		if ( subEvent == "UNIT_DIED" ) then
 			self:RemoveUnit(guid);
 		elseif ( subEvent == "SPELL_AURA_APPLIED" and sourceGUID == UnitGUID("player")
 			     	and destGUID ~= sourceGUID and auraType == "DEBUFF" ) then
-			local unitFrame = self.UnitFrames[destGUID];
-			if ( not unitFrame ) then
-				unitFrame = self:AddNewUnit(destGUID);
+			local currWhitelist = GetCurrentWhitelist();
+			if ( not DOT_HUB_USE_WHITELIST or currWhitelist[spellId] ) then
+				local unitFrame = self.UnitFrames[destGUID];
+				if ( not unitFrame ) then
+					unitFrame = self:AddNewUnit(destGUID, destName);
+				end
+				unitFrame:AddDebuff(spellId);
 			end
-			unitFrame:AddDebuff(spellId);
 		elseif ( subEvent == "SPELL_AURA_REMOVED" and sourceGUID == UnitGUID("player")
 			     	and destGUID ~= sourceGUID and auraType == "DEBUFF" ) then
 			local unitFrame = self.UnitFrames[destGUID];
@@ -309,7 +351,13 @@ function DoTHubFrameMixin:OnEvent(event, ...)
 				unitFrame:RemoveDebuff(spellId);
 			end
 		end
+	elseif ( event == "PLAYER_REGEN_DISABLED" ) then
+		self.WhitelistButton:Disable();
+		self.WhitelistToggle:Disable();
+		DoTHubWhitelistFrame:Hide();
 	elseif ( event == "PLAYER_REGEN_ENABLED" ) then
+		self.WhitelistButton:Enable();
+		self.WhitelistToggle:Enable();
 		--self:ClearUnitFrames();
 	elseif ( event == "UNIT_TARGET" ) then
 		local unitTarget = ...;
@@ -329,10 +377,9 @@ function DoTHubFrameMixin:ClearUnitFrames()
 	self.NumUnitFrames = 0;
 	self:SetHeight(DOT_HUB_BASE_HEIGHT);
 	self.UnitsLinkedListStart = nil;
-	self.UnitsLinkedListEnd = nil;
 end
 
-function DoTHubFrameMixin:AddNewUnit(unitGUID)
+function DoTHubFrameMixin:AddNewUnit(unitGUID, unitName)
 	if ( self.UnitFrames[unitGUID] ) then
 		return;
 	end
@@ -341,7 +388,7 @@ function DoTHubFrameMixin:AddNewUnit(unitGUID)
 	local f = GetNewUnitFrame(self);
 	self.UnitFrames[unitGUID] = f;
 	f:SetGUID(unitGUID);
-	local targetName = GUIDToUnitCache[unitGUID] and GUIDToUnitCache[unitGUID][1] and UnitName(GUIDToUnitCache[unitGUID][1]);
+	local targetName = unitName or GUIDToUnitCache[unitGUID] and GUIDToUnitCache[unitGUID][1] and UnitName(GUIDToUnitCache[unitGUID][1]);
 	if ( targetName ) then
 		f.Name:SetText(targetName);
 	else
@@ -352,10 +399,10 @@ function DoTHubFrameMixin:AddNewUnit(unitGUID)
 			tinsert(needNameFromUnit[unitGUID], f);
 		end
 	end
-	self.UnitsLinkedListStart, self.UnitsLinkedListEnd = LinkedListAddBack(f, self.UnitsLinkedListStart, self.UnitsLinkedListEnd);
-	local lastFrame = f.PrevNode;
-	if ( lastFrame ) then
-		f:SetPoint("TOP", lastFrame, "BOTTOM", 0, NAMEPLATE_PADDING);
+	self.UnitsLinkedListStart = LinkedListAddFront(f, self.UnitsLinkedListStart);
+	f:ClearAllPoints();
+	if ( f.NextNode ) then
+		f:SetPoint("TOP", f.NextNode, "BOTTOM", 0, NAMEPLATE_PADDING);
 	else
 		f:SetPoint("TOP", self, "TOP", 20, -30);
 	end
@@ -374,32 +421,25 @@ function DoTHubFrameMixin:RemoveUnit(unitGUID)
 	self.NumUnitFrames = self.NumUnitFrames - 1;
 	local newHeight = DOT_HUB_BASE_HEIGHT + (100 + NAMEPLATE_PADDING + 20) * self.NumUnitFrames;
 	self:SetHeight(newHeight);
-	local currFrame = unitFrame;
-	while ( currFrame.NextNode ) do
-		currFrame.NextNode:ClearAllPoints();
-		if ( currFrame.PrevNode) then
-			currFrame.NextNode:SetPoint("TOP", currFrame.PrevNode, "BOTTOM", 0, NAMEPLATE_PADDING);
-		else
-			currFrame.NextNode:SetPoint("TOP", self, "TOP", 20, -30);
+
+	local currFrame = unitFrame.PrevNode;
+	while ( currFrame ) do
+		currFrame:ClearAllPoints();
+		local relativeTo = currFrame.NextNode;
+		if ( currFrame.NextNode == unitFrame ) then
+			relativeTo = relativeTo.NextNode
 		end
-		currFrame = currFrame.NextNode;
+		if ( relativeTo ) then
+			currFrame:SetPoint("TOP", relativeTo, "BOTTOM", 0, NAMEPLATE_PADDING);
+		else
+			currFrame:SetPoint("TOP", self, "TOP", 20, -30);
+		end
+		currFrame = currFrame.PrevNode;
 	end
+
 	self.UnitFrames[unitGUID] = nil;
-	self.UnitsLinkedListStart, self.UnitsLinkedListEnd = LinkedListRemove(unitFrame, self.UnitsLinkedListStart, self.UnitsLinkedListEnd);
+	self.UnitsLinkedListStart = LinkedListRemove(unitFrame, self.UnitsLinkedListStart);
 	RemoveUnitFrame(unitFrame);
-end
-
-
-function DoTHubFrameMixin:OnEnter()
-	for _, texture in ipairs(self.Textures) do
-		texture:Show();
-	end
-end
-
-function DoTHubFrameMixin:OnLeave()
-	for _, texture in ipairs(self.Textures) do
-		--texture:Hide(); -- Always show frame for now
-	end
 end
 
 function DoTHubFrameMixin:OnDragStart()
@@ -408,6 +448,40 @@ end
 
 function DoTHubFrameMixin:OnDragStop()
 	self:StopMovingOrSizing();
+end
+
+
+DoTHubWhiteListToggleButtonMixin = {};
+
+function DoTHubWhiteListToggleButtonMixin:OnClick()
+	local whitelistFrame = DoTHubWhitelistFrame;
+	local show = not whitelistFrame:IsShown();
+	whitelistFrame:SetShown(show);
+end
+
+
+DoTHubWhiteListToggleBoxMixin = {};
+
+function DoTHubWhiteListToggleBoxMixin:OnLoad()
+	self:RegisterEvent("ADDON_LOADED");
+	self.Text:SetText(USE_WHITELIST);
+	self.tooltip = USE_WHITELIST_TOOLTIP;
+end
+
+function DoTHubWhiteListToggleBoxMixin:OnEvent(event, ...)
+	if ( event == "ADDON_LOADED" ) then
+		addon = ...;
+		if ( addon == "DoTHub" ) then
+			local useWhitelist = DOT_HUB_USE_WHITELIST;
+			self:SetChecked(useWhitelist);
+			self:UnregisterEvent("ADDON_LOADED");
+		end
+	end
+end
+
+function DoTHubWhiteListToggleBoxMixin:OnClick()
+	local useWhitelist = self:GetChecked();
+	DOT_HUB_USE_WHITELIST = useWhitelist;
 end
 
 -- End Core Code -------------------------------------------------------

@@ -2,6 +2,22 @@
 ..\..\FrameXML\UI.xsd">
 	<Script file="DoTHub.lua"/>
 
+	<Button name="DoTHubWhiteListFrameToggleButton" inherits="MagicButtonTemplate" text="WHITELIST_BUTTON" mixin="DoTHubWhiteListToggleButtonMixin" virtual="true">
+		<Size x="90" y="20"/>
+		<Scripts>
+			<OnClick method="OnClick"/>
+		</Scripts>
+	</Button>
+
+	<CheckButton name="DoTHubWhiteListToggleBox" inherits="ChatConfigCheckButtonTemplate" mixin="DoTHubWhiteListToggleBoxMixin" virtual="true">
+		<Size x="20" y="20"/>
+		<Scripts>
+			<OnLoad method="OnLoad"/>
+			<OnEvent method="OnEvent"/>
+			<OnClick method="OnClick"/>
+		</Scripts>
+	</CheckButton>
+
 	<Frame name="DoTHubDebuffFrameTemplate" virtual="true" enableMouse="true">
 		<Size x="32" y="32"/>
 		<Layers>
@@ -51,20 +67,69 @@
 	</Frame>
 
 	<Frame name="DoTHubFrame" parent="UIParent" enableMouse="true" movable="true" mixin="DoTHubFrameMixin">
-		<Size x="300" y="120"/>
+		<Size x="300" y="150"/>
 		<Anchors>
 			<Anchor point="CENTER"/>
 		</Anchors>
 		<Layers>
 			<Layer level="BORDER">
-				<Texture parentKey="TopSeparator" parentArray="Textures" hidden="true">
+				<Texture parentKey="TopSeparator" parentArray="Textures">
 					<Size x="250" y="1"/>
 					<Anchors>
 						<Anchor point="TOP" relativePoint="TOP" x="0" y="-30"/>
 					</Anchors>
 					<Color r="0.25" g="0.25" b="0.25"/>
 				</Texture>
-				<Texture parentKey="BottomSeparator" parentArray="Textures" hidden="true">
+				<Texture parentKey="BottomSeparator" parentArray="Textures">
+					<Size x="250" y="1"/>
+					<Anchors>
+						<Anchor point="BOTTOM" x="0" y="40"/>
+					</Anchors>
+					<Color r="0.25" g="0.25" b="0.25"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Frame parentKey="BG" inherits="DialogBorderTemplate" parentArray="Textures"/>
+			<Frame parentKey="Header" inherits="DialogHeaderTemplate" parentArray="Textures">
+				<KeyValues>
+					<KeyValue key="textString" value="DOT_HUB" type="global"/>
+				</KeyValues>
+			</Frame>
+			<Button parentKey="WhitelistButton" inherits="DoTHubWhiteListFrameToggleButton">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.BottomSeparator" relativePoint="LEFT" x="0" y="-5"/>
+				</Anchors>
+			</Button>
+			<CheckButton parentKey="WhitelistToggle" inherits="DoTHubWhiteListToggleBox">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.WhitelistButton" relativePoint="TOPRIGHT" x="5" y="0"/>
+				</Anchors>
+			</CheckButton>
+		</Frames>
+		<Scripts>
+			<OnLoad method="OnLoad"/>
+			<OnEvent method="OnEvent"/>
+			<OnDragStart method="OnDragStart"/>
+			<OnDragStop method="OnDragStop"/>
+		</Scripts>
+	</Frame>
+
+	<Frame name="DoTHubWhitelistFrame" parent="UIParent" hidden="true">
+		<Size x="300" y="500"/>
+		<Anchors>
+			<Anchor point="CENTER"/>
+		</Anchors>
+		<Layers>
+			<Layer level="BORDER">
+				<Texture parentKey="TopSeparator" parentArray="Textures">
+					<Size x="250" y="1"/>
+					<Anchors>
+						<Anchor point="TOP" relativePoint="TOP" x="0" y="-30"/>
+					</Anchors>
+					<Color r="0.25" g="0.25" b="0.25"/>
+				</Texture>
+				<Texture parentKey="BottomSeparator" parentArray="Textures">
 					<Size x="250" y="1"/>
 					<Anchors>
 						<Anchor point="BOTTOM" x="0" y="20"/>
@@ -74,21 +139,13 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<Frame parentKey="BG" inherits="DialogBorderTemplate" parentArray="Textures" hidden="true"/>
-			<Frame parentKey="Header" inherits="DialogHeaderTemplate" parentArray="Textures" hidden="true">
+			<Frame parentKey="BG" inherits="DialogBorderTemplate" parentArray="Textures"/>
+			<Frame parentKey="Header" inherits="DialogHeaderTemplate" parentArray="Textures">
 				<KeyValues>
-					<KeyValue key="textString" value="DOT_HUB" type="global"/>
+					<KeyValue key="textString" value="DOT_HUB_WHITELIST" type="global"/>
 				</KeyValues>
 			</Frame>
 		</Frames>
-		<Scripts>
-			<OnLoad method="OnLoad"/>
-			<OnEvent method="OnEvent"/>
-			<OnEnter method="OnEnter"/>
-			<OnLeave method="OnLeave"/>
-			<OnDragStart method="OnDragStart"/>
-			<OnDragStop method="OnDragStop"/>
-		</Scripts>
 	</Frame>
 
 </Ui>

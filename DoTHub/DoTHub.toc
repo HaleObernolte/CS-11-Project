@@ -1,5 +1,6 @@
 ## Interface: 90001
 ## Title: DoT Hub
 ## Author: Hale Obernolte
+## SavedVariablesPerCharacter: DOT_HUB_WHITELISTS, DOT_HUB_USE_WHITELIST
 
 DoTHub.xml
