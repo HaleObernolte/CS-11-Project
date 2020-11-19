@@ -5,6 +5,7 @@ DOT_HUB_WHITELIST = "DoT Hub Whitelist";
 WHITELIST_BUTTON = "Whitelist";
 USE_WHITELIST = "Use Whitelist";
 USE_WHITELIST_TOOLTIP = "When enabled, only spells manually specified in the whitelist frame will be tracked.";
+WHITELIST_EDIT_INSTRUCTIONS = "|cFF808080Enter spell name or spell ID here...|r";
 
 local NO_NAME_FOUND = "Waiting for unit data...";
 local MAX_NAMEPLATES = 5; -- TODO: Enforce
@@ -20,6 +21,7 @@ DOT_HUB_WHITELISTS = {
 	{},
 };
 DOT_HUB_USE_WHITELIST = false;
+DOT_HUB_NAME_TO_SPELLID_MAP = {};
 
 -- End Data ------------------------------------------------------------
 
@@ -53,6 +55,7 @@ local function GetNewUnitFrame(parent)
         f.NextNode = nil;
         f.DebuffLinkedListStart = nil;
         f.Name:SetText("");
+        f.Portrait:SetTexture(nil);
         f:Show();
     end
     return f;
@@ -149,6 +152,61 @@ local function LinkedListAddFront(f, listStart)
 	return listStart;
 end
 
+local function LinkedListAddSorted(f, listStart)
+	if ( debugLinkedList ) then
+		print("|cFF00FF00Adding node at:|r", f);
+	end
+
+	-- Put as list start case
+	if ( not listStart or f.spellId < listStart.spellId ) then
+		f.PrevNode = nil;
+		f.NextNode = listStart;
+		if ( listStart ) then
+			listStart.PrevNode = f;
+		end
+		listStart = f;
+
+		if ( debugLinkedList ) then
+			CheckLinkedList(listStart);
+			PrintLinkedList(listStart);
+		end
+		return listStart;
+	end
+
+	-- General put in middle case
+	local currNode = listStart.NextNode;
+	local lastVisited = listStart;
+	while ( currNode ) do
+		if ( f.spellId < currNode.spellId ) then
+			f.PrevNode = currNode.PrevNode;
+			f.NextNode = currNode;
+
+			currNode.PrevNode = f;
+			f.PrevNode.NextNode = f;
+
+			if ( debugLinkedList ) then
+				CheckLinkedList(listStart);
+				PrintLinkedList(listStart);
+			end
+			return listStart;
+		end
+
+		lastVisited = currNode;
+		currNode = currNode.NextNode;
+	end
+
+	-- Put as list end case
+	f.PrevNode = lastVisited;
+	f.NextNode = nil;
+	lastVisited.NextNode = f;
+
+	if ( debugLinkedList ) then
+		CheckLinkedList(listStart);
+		PrintLinkedList(listStart);
+	end
+	return listStart;
+end
+
 local function LinkedListRemove(f, listStart)
 	if ( debugLinkedList ) then
 		print("|cFF00FF00Removing node at:|r", f);
@@ -206,6 +264,7 @@ local function UpdateUnitGUIDCaches(unit)
 		local name = UnitName(unit);
 		for _, f in pairs(needNameFromUnit[newGUID]) do
 			f.Name:SetText(name);
+			SetPortraitTexture(f.Portrait, unit);
 		end
 		needNameFromUnit[newGUID] = nil;
 	end
@@ -213,8 +272,53 @@ end
 
 
 local function GetCurrentWhitelist()
-	local spec = GetSpecialization();
+	local spec = GetSpecialization() or 1;
 	return DOT_HUB_WHITELISTS[spec];
+end
+
+local function WhitelistContains(spellName)
+	if ( not spellName ) then
+		return false;
+	end
+
+	local currWhitelist = GetCurrentWhitelist();
+	for _, name in ipairs(currWhitelist) do
+		if ( name == spellName ) then
+			return true;
+		end
+	end
+
+	return false;
+end
+
+local function AddToWhitelist(spellName)
+	local currWhitelist = GetCurrentWhitelist();
+	for _, name in ipairs(currWhitelist) do
+		if ( name == spellName ) then
+			return;
+		end
+	end
+	tinsert(currWhitelist, spellName);
+end
+
+local function RemoveFromWhitelist(spellName)
+	local currWhitelist = GetCurrentWhitelist();
+	for i, name in ipairs(currWhitelist) do
+		if ( name == spellName ) then
+			tremove(currWhitelist, i);
+			return;
+		end
+	end
+end
+
+function DoTHubClearAllWhitelists()
+	DOT_HUB_WHITELISTS = {
+		{},
+		{},
+		{},
+		{},
+	};
+	DoTHubWhitelistFrame:SetWhitelistOptions();
 end
 
 
@@ -225,16 +329,30 @@ function DoTHubUnitFrameMixin:AddDebuff(spellId)
 	if ( not self.Debuffs[spellId] ) then
 		self.NumDebuffs = self.NumDebuffs and self.NumDebuffs + 1 or 1;
 		debuffFrame = GetNewDebuffFrame(self);
+		debuffFrame.spellId = spellId;
 		self.Debuffs[spellId] = debuffFrame;
-		self.DebuffsLinkedListStart = LinkedListAddFront(debuffFrame, self.DebuffsLinkedListStart);
+		self.DebuffsLinkedListStart = LinkedListAddSorted(debuffFrame, self.DebuffsLinkedListStart);
 		debuffFrame:ClearAllPoints();
 		if ( debuffFrame.NextNode ) then
 			debuffFrame:SetPoint("BOTTOMLEFT", debuffFrame.NextNode, "BOTTOMRIGHT", 0, 0);
 		else
-			debuffFrame:SetPoint("CENTER", self, "LEFT", -20, -20);
-		end 
+			debuffFrame:SetPoint("LEFT", self, "LEFT", 15, -15);
+		end
+
 		local _, _, spellIcon = GetSpellInfo(spellId);
 		debuffFrame.Icon:SetTexture(spellIcon);
+
+		local currFrame = debuffFrame.PrevNode;
+		while ( currFrame ) do
+			currFrame:ClearAllPoints();
+			local relativeTo = currFrame.NextNode;
+			if ( relativeTo ) then
+				currFrame:SetPoint("BOTTOMLEFT", relativeTo, "BOTTOMRIGHT", 0, 0);
+			else
+				currFrame:SetPoint("LEFT", self, "LEFT", 15, -15);
+			end
+			currFrame = currFrame.PrevNode;
+		end
 	end
 	CooldownFrame_Clear(debuffFrame.Cooldown);
 end
@@ -256,7 +374,7 @@ function DoTHubUnitFrameMixin:RemoveDebuff(spellId)
 		if ( relativeTo ) then
 			currFrame:SetPoint("BOTTOMLEFT", relativeTo, "BOTTOMRIGHT", 0, 0);
 		else
-			currFrame:SetPoint("CENTER", self, "LEFT", -20, -20);
+			currFrame:SetPoint("LEFT", self, "LEFT", 15, -15);
 		end
 		currFrame = currFrame.PrevNode;
 	end
@@ -280,8 +398,12 @@ function DoTHubUnitFrameMixin:OnUpdate()
         	if ( caster == "player" ) then
         		local debuffFrame = self.Debuffs[spellId];
         		if ( not debuffFrame ) then
-        			print("|cFFFF0000DoT Hub: ERROR! Untracked debuff found:|r", debuffName);
-        			return;
+        			if ( not DOT_HUB_USE_WHITELIST or WhitelistContains(debuffName) ) then
+        				self:AddDebuff(spellId);
+        				debuffFrame = self.Debuffs[spellId];
+        			else
+        				return;
+        			end
         		end
         		debuffFrame.Icon:SetTexture(icon);
         		CooldownFrame_Set(debuffFrame.Cooldown, expirationTime - duration, duration, duration > 0, true);
@@ -336,8 +458,8 @@ function DoTHubFrameMixin:OnEvent(event, ...)
 			self:RemoveUnit(guid);
 		elseif ( subEvent == "SPELL_AURA_APPLIED" and sourceGUID == UnitGUID("player")
 			     	and destGUID ~= sourceGUID and auraType == "DEBUFF" ) then
-			local currWhitelist = GetCurrentWhitelist();
-			if ( not DOT_HUB_USE_WHITELIST or currWhitelist[spellId] ) then
+			local spellName = GetSpellInfo(spellId);
+			if ( not DOT_HUB_USE_WHITELIST or WhitelistContains(spellName) ) then
 				local unitFrame = self.UnitFrames[destGUID];
 				if ( not unitFrame ) then
 					unitFrame = self:AddNewUnit(destGUID, destName);
@@ -358,7 +480,6 @@ function DoTHubFrameMixin:OnEvent(event, ...)
 	elseif ( event == "PLAYER_REGEN_ENABLED" ) then
 		self.WhitelistButton:Enable();
 		self.WhitelistToggle:Enable();
-		--self:ClearUnitFrames();
 	elseif ( event == "UNIT_TARGET" ) then
 		local unitTarget = ...;
 		local targetedUnit = unitTarget.."target";
@@ -388,11 +509,24 @@ function DoTHubFrameMixin:AddNewUnit(unitGUID, unitName)
 	local f = GetNewUnitFrame(self);
 	self.UnitFrames[unitGUID] = f;
 	f:SetGUID(unitGUID);
-	local targetName = unitName or GUIDToUnitCache[unitGUID] and GUIDToUnitCache[unitGUID][1] and UnitName(GUIDToUnitCache[unitGUID][1]);
+	local cachedUnit = GUIDToUnitCache[unitGUID] and GUIDToUnitCache[unitGUID][1];
+	local targetName = unitName or cachedUnit and UnitName(GUIDToUnitCache[unitGUID][1]);
 	if ( targetName ) then
 		f.Name:SetText(targetName);
+
+		if ( cachedUnit ) then
+			SetPortraitTexture(f.Portrait, cachedUnit);
+		else
+			f.Portrait:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark");
+			if ( not needNameFromUnit[unitGUID] ) then
+				needNameFromUnit[unitGUID] = {f};
+			else
+				tinsert(needNameFromUnit[unitGUID], f);
+			end
+		end
 	else
 		f.Name:SetText(NO_NAME_FOUND);
+		f.Portrait:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark");
 		if ( not needNameFromUnit[unitGUID] ) then
 			needNameFromUnit[unitGUID] = {f};
 		else
@@ -404,7 +538,7 @@ function DoTHubFrameMixin:AddNewUnit(unitGUID, unitName)
 	if ( f.NextNode ) then
 		f:SetPoint("TOP", f.NextNode, "BOTTOM", 0, NAMEPLATE_PADDING);
 	else
-		f:SetPoint("TOP", self, "TOP", 20, -30);
+		f:SetPoint("TOPLEFT", self, "TOPLEFT", 10, -30);
 	end
 	local newHeight = DOT_HUB_BASE_HEIGHT + (100 + NAMEPLATE_PADDING + 20) * self.NumUnitFrames;
 	self:SetHeight(newHeight);
@@ -432,7 +566,7 @@ function DoTHubFrameMixin:RemoveUnit(unitGUID)
 		if ( relativeTo ) then
 			currFrame:SetPoint("TOP", relativeTo, "BOTTOM", 0, NAMEPLATE_PADDING);
 		else
-			currFrame:SetPoint("TOP", self, "TOP", 20, -30);
+			currFrame:SetPoint("TOP", self, "TOP", 10, -30);
 		end
 		currFrame = currFrame.PrevNode;
 	end
@@ -482,6 +616,132 @@ end
 function DoTHubWhiteListToggleBoxMixin:OnClick()
 	local useWhitelist = self:GetChecked();
 	DOT_HUB_USE_WHITELIST = useWhitelist;
+end
+
+
+WhitelistEditBoxMixin = {};
+
+function WhitelistEditBoxMixin:OnShow()
+	self:SetText(WHITELIST_EDIT_INSTRUCTIONS);
+end
+
+function WhitelistEditBoxMixin:OnEditFocusGained()
+	self:SetText("");
+end
+
+function WhitelistEditBoxMixin:OnEditFocusLost()
+	self:SetText(WHITELIST_EDIT_INSTRUCTIONS);
+end
+
+function WhitelistEditBoxMixin:OnEnterPressed()
+	local input = self:GetText();
+	local spellName = GetSpellInfo(input);
+	if ( spellName ) then
+		AddToWhitelist(spellName);
+		self:GetParent():SetWhitelistOptions();
+		local spellId = tonumber(input);
+		if ( spellId ) then
+			DOT_HUB_NAME_TO_SPELLID_MAP[spellName] = spellId;
+		end
+	end
+	self:SetText(WHITELIST_EDIT_INSTRUCTIONS);
+	self:ClearFocus();
+end
+
+function WhitelistEditBoxMixin:OnEscapePressed()
+	self:SetText(WHITELIST_EDIT_INSTRUCTIONS);
+	self:ClearFocus();
+end
+
+
+DoTHubWhitelistLineMixin = {};
+
+function DoTHubWhitelistLineMixin:InitElement(whitelist)
+	self.whitelist = whitelist;
+end
+
+function DoTHubWhitelistLineMixin:GetWhitelist()
+	return self.whitelist;
+end
+
+function DoTHubWhitelistLineMixin:GetOption()
+	return self:GetWhitelist():GetOption(self:GetListIndex());
+end
+
+function DoTHubWhitelistLineMixin:UpdateDisplay()
+	local option = self:GetOption();
+	local spellName = option.spellName;
+	local spellIcon = option.spellIcon;
+
+	if ( not spellName or not spellIcon ) then
+		self.NameText:SetText(RETRIEVING_ITEM_INFO);
+		self.Icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark");
+		return;
+	end
+
+	self.spellName = spellName;
+	self.NameText:SetText(spellName);
+	self.Icon:SetTexture(spellIcon);
+end
+
+
+DoTHubWhitelistLineRemoveMixin = {};
+
+function DoTHubWhitelistLineRemoveMixin:OnClick(button, down)
+	local whitelistLine = self:GetParent();
+	RemoveFromWhitelist(whitelistLine.spellName);
+	local whitelistFrame = whitelistLine:GetWhitelist();
+	whitelistFrame:SetWhitelistOptions();
+end
+
+
+DoTHubWhitelistFrameMixin = {};
+
+function DoTHubWhitelistFrameMixin:OnLoad()
+	self.listedOptions = {};
+	self:InitScrollFrame();
+	self:SetWhitelistOptions();
+end
+
+function DoTHubWhitelistFrameMixin:OnShow()
+	self:SetWhitelistOptions();
+end
+
+function DoTHubWhitelistFrameMixin:SetWhitelistOptions()
+	self.listedOptions = {};
+	self.currWhitelist = GetCurrentWhitelist();
+	for _, name in ipairs(self.currWhitelist) do
+		local spellName, _, spellIcon = GetSpellInfo(name);
+		if ( not spellName and DOT_HUB_NAME_TO_SPELLID_MAP[name] ) then
+			spellName, _, spellIcon = GetSpellInfo(DOT_HUB_NAME_TO_SPELLID_MAP[name]);
+		end
+		if ( spellName ) then
+			local newOption = {
+				spellName = spellName,
+				spellIcon = spellIcon,
+			};
+			tinsert(self.listedOptions, newOption);
+		end
+	end
+	self.ScrollList:RefreshListDisplay();
+end
+
+function DoTHubWhitelistFrameMixin:InitScrollFrame()
+	self.ScrollList:SetElementTemplate("DoTHubWhitelistLineTemplate", self);
+
+	local function GetNumResultsCallback()
+		return self:GetNumResults();
+	end
+
+	self.ScrollList:SetGetNumResultsFunction(GetNumResultsCallback);
+end
+
+function DoTHubWhitelistFrameMixin:GetNumResults()
+	return #self.listedOptions;
+end
+
+function DoTHubWhitelistFrameMixin:GetOption(index)
+	return self.listedOptions[index];
 end
 
 -- End Core Code -------------------------------------------------------

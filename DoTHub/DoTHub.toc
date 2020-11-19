@@ -1,6 +1,7 @@
-## Interface: 90001
+## Interface: 90002
 ## Title: DoT Hub
 ## Author: Hale Obernolte
 ## SavedVariablesPerCharacter: DOT_HUB_WHITELISTS, DOT_HUB_USE_WHITELIST
+## SavedVariables: DOT_HUB_NAME_TO_SPELLID_MAP
 
 DoTHub.xml

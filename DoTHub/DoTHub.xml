@@ -50,17 +50,26 @@
 	</Frame>
 
 	<Frame name="DoTHubUnitFrameTemplate" mixin="DoTHubUnitFrameMixin" virtual="true">
-		<Size x="232" y="100"/>
+		<Size x="280" y="100"/>
 		<Layers>
 			<Layer level="BORDER">
-				<FontString parentKey="Name" inherits="GameFontNormalSmall">
-					<Size x="232" y="10"/>
+				<FontString parentKey="Name" inherits="GameFontNormal">
+					<Size x="200" y="10"/>
 					<Anchors>
-						<Anchor point="CENTER" x="-50" y="19"/>
+						<Anchor point="LEFT" relativePoint="LEFT" x="-10" y="19"/>
 					</Anchors>
 				</FontString>
+				<Texture parentKey="Portrait">
+					<Size x="60" y="60"/>
+					<Anchors>
+						<Anchor point="RIGHT" relativePoint="RIGHT" x="-15" y="0"/>
+					</Anchors>
+				</Texture>
 			</Layer>
 		</Layers>
+		<Frames>
+			<Frame parentKey="BG" inherits="DialogBorderTemplate" parentArray="Textures"/>
+		</Frames>
 		<Scripts>
 			<OnUpdate method="OnUpdate"/>
 		</Scripts>
@@ -115,22 +124,52 @@
 		</Scripts>
 	</Frame>
 
-	<Frame name="DoTHubWhitelistFrame" parent="UIParent" hidden="true">
-		<Size x="300" y="500"/>
+	<Button name="DoTHubWhitelistLineTemplate" inherits="ScrollListLineTemplate" mixin="DoTHubWhitelistLineMixin" virtual="true">
+		<Size x="300" y="40"/>
+		<Layers>
+			<Layer level="ARTWORK">
+				<Texture parentKey="Icon" setAllPoints="true">
+					<Size x="32" y="32"/>
+					<Anchors>
+						<Anchor point="LEFT" relativePoint="LEFT" x="5" y="0"/>
+					</Anchors>
+				</Texture>
+				<FontString parentKey="NameText" inherits="GameFontNormal">
+					<Anchors>
+						<Anchor point="LEFT" relativeKey="$parent.Icon" relativePoint="RIGHT" x="5" y="0"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Button name="RemoveButton" inherits="MagicButtonTemplate" text="REMOVE" mixin="DoTHubWhitelistLineRemoveMixin">
+				<Size x="64" y="25"/>
+				<Anchors>
+					<Anchor point="RIGHT" relativePoint="RIGHT" x="-5" y="0"/>
+				</Anchors>
+				<Scripts>
+					<OnClick method="OnClick"/>
+				</Scripts>
+			</Button>
+		</Frames>
+	</Button>
+
+	<Frame name="DoTHubWhitelistFrame" parent="UIParent" mixin="DoTHubWhitelistFrameMixin" hidden="true">
+		<Size x="350" y="300"/>
 		<Anchors>
 			<Anchor point="CENTER"/>
 		</Anchors>
 		<Layers>
 			<Layer level="BORDER">
 				<Texture parentKey="TopSeparator" parentArray="Textures">
-					<Size x="250" y="1"/>
+					<Size x="300" y="1"/>
 					<Anchors>
 						<Anchor point="TOP" relativePoint="TOP" x="0" y="-30"/>
 					</Anchors>
 					<Color r="0.25" g="0.25" b="0.25"/>
 				</Texture>
 				<Texture parentKey="BottomSeparator" parentArray="Textures">
-					<Size x="250" y="1"/>
+					<Size x="300" y="1"/>
 					<Anchors>
 						<Anchor point="BOTTOM" x="0" y="20"/>
 					</Anchors>
@@ -145,7 +184,35 @@
 					<KeyValue key="textString" value="DOT_HUB_WHITELIST" type="global"/>
 				</KeyValues>
 			</Frame>
+			<EditBox parentKey="WhitelistEditBox" letters="48" historyLines="1" autoFocus="false" mixin="WhitelistEditBoxMixin">
+				<Size x="300" y="32"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeKey="$parent.TopSeparator" relativePoint="LEFT" x="-5" y="-15"/>
+				</Anchors>
+				<Scripts>
+					<OnEnterPressed method="OnEnterPressed"/>
+					<OnEscapePressed method="OnEscapePressed"/>
+				</Scripts>
+				<FontString inherits="GameFontNormal">
+					<Color r="1.0" g="1.0" b="1.0" a="1.0"/>
+				</FontString>
+				<Scripts>
+					<OnShow method="OnShow"/>
+					<OnEditFocusGained method="OnEditFocusGained"/>
+					<OnEditFocusLost method="OnEditFocusLost"/>
+				</Scripts>
+			</EditBox>
+			<Frame parentKey="ScrollList" inherits="ScrollListTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.WhitelistEditBox" relativePoint="BOTTOMLEFT" x="0" y="0"/>
+					<Anchor point="BOTTOMRIGHT" relativeKey="$parent.BottomSeparator" relativePoint="RIGHT" x="10" y="5"/>
+				</Anchors>
+			</Frame>
 		</Frames>
+		<Scripts>
+			<OnLoad method="OnLoad"/>
+			<OnShow method="OnShow"/>
+		</Scripts>
 	</Frame>
 
 </Ui>
