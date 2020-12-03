@@ -1,0 +1,142 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\..\FrameXML\UI.xsd">
+	<Script file="ItemTracker.lua"/>
+
+	<Button name="ItemTrackerItemTemplate" inherits="ScrollListLineTemplate" mixin="ItemTrackerItemMixin" virtual="true">
+		<Size x="370" y="24"/>
+		<Layers>
+			<Layer level="ARTWORK">
+				<Texture parentKey="Icon" setAllPoints="true">
+					<Size x="24" y="24"/>
+					<Anchors>
+						<Anchor point="LEFT" relativePoint="LEFT" x="5" y="0"/>
+					</Anchors>
+				</Texture>
+				<FontString parentKey="Name" maxLines="1" inherits="GameFontNormal">
+					<Size x="120" y="0"/>
+					<Anchors>
+						<Anchor point="LEFT" relativeKey="$parent.Icon" relativePoint="RIGHT" x="1" y="0"/>
+					</Anchors>
+				</FontString>
+				<FontString parentKey="Quantity" maxLines="1" inherits="GameFontHighlight">
+					<Size x="30" y="0"/>
+					<Anchors>
+						<Anchor point="LEFT" relativeKey="$parent.Name" relativePoint="RIGHT" x="10" y="0"/>
+					</Anchors>
+				</FontString>
+				<FontString parentKey="ValuePer" maxLines="1" inherits="GameFontNormal">
+					<Size x="50" y="0"/>
+					<Anchors>
+						<Anchor point="LEFT" relativeKey="$parent.Quantity" relativePoint="RIGHT" x="13" y="0"/>
+					</Anchors>
+				</FontString>
+				<FontString parentKey="ValueTotal" maxLines="1" inherits="GameFontNormal">
+					<Anchors>
+						<Anchor point="LEFT" relativeKey="$parent.ValuePer" relativePoint="RIGHT" x="13" y="0"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+	</Button>
+
+	<Frame name="ItemTrackerFrame" parent="UIParent" enableMouse="true" movable="true" mixin="ItemTrackerFrameMixin">
+		<Size x="400" y="327"/>
+		<Anchors>
+			<Anchor point="CENTER"/>
+		</Anchors>
+		<Layers>
+			<Layer level="BORDER">
+				<Texture parentKey="TopSeparator" parentArray="Textures">
+					<Size x="370" y="1"/>
+					<Anchors>
+						<Anchor point="TOP" relativePoint="TOP" x="0" y="-30"/>
+					</Anchors>
+					<Color r="0.25" g="0.25" b="0.25"/>
+				</Texture>
+				<Texture parentKey="BottomSeparator" parentArray="Textures">
+					<Size x="370" y="1"/>
+					<Anchors>
+						<Anchor point="BOTTOM" x="0" y="67"/>
+					</Anchors>
+					<Color r="0.25" g="0.25" b="0.25"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Frame parentKey="BG" inherits="DialogBorderTemplate" parentArray="Textures"/>
+			<Button parentKey="Header" inherits="DialogHeaderTemplate">
+				<KeyValues>
+					<KeyValue key="textString" value="ITEM_TRACKER" type="global"/>
+				</KeyValues>
+				<Scripts>
+					<OnClick>
+						self:GetParent():ToggleTextures();
+					</OnClick>
+				</Scripts>
+			</Button>
+			<Frame parentKey="ScrollList" inherits="ScrollListTemplate" parentArray="Textures">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.TopSeparator" relativePoint="BOTTOMLEFT" x="0" y="0"/>
+					<Anchor point="BOTTOMRIGHT" relativeKey="$parent.BottomSeparator" relativePoint="RIGHT" x="0" y="5"/>
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						self:GetParent():InitScrollFrame();
+					</OnLoad>
+				</Scripts>
+			</Frame>
+			<EditBox parentKey="AddItemBox" letters="48" historyLines="1" autoFocus="false" mixin="ItemTrackerAddItemBoxMixin" parentArray="Textures">
+				<Size x="300" y="32"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeKey="$parent.BottomSeparator" relativePoint="LEFT" x="5" y="-15"/>
+				</Anchors>
+				<Scripts>
+					<OnEnterPressed method="OnEnterPressed"/>
+					<OnEscapePressed method="OnEscapePressed"/>
+				</Scripts>
+				<FontString inherits="GameFontNormal">
+					<Color r="1.0" g="1.0" b="1.0" a="1.0"/>
+				</FontString>
+				<Scripts>
+					<OnShow method="OnShow"/>
+					<OnEditFocusGained method="OnEditFocusGained"/>
+					<OnEditFocusLost method="OnEditFocusLost"/>
+				</Scripts>
+			</EditBox>
+			<Button parentKey="StartSessionButton" inherits="MagicButtonTemplate" text="IT_START_SESSION" mixin="ItemTrackerStartSessionButtonMixin" parentArray="Textures">
+				<Size x="90" y="22"/>
+				<Anchors>
+					<Anchor point="BOTTOM" relativePoint="BOTTOM" x="0" y="15"/>
+				</Anchors>
+				<Scripts>
+					<OnClick method="OnClick"/>
+				</Scripts>
+			</Button>
+			<Button parentKey="OptionsButton" inherits="MagicButtonTemplate" text="OPTIONS" mixin="ItemTrackerOptionsButtonMixin" parentArray="Textures">
+				<Size x="90" y="22"/>
+				<Anchors>
+					<Anchor point="TOPRIGHT" relativeKey="$parent.StartSessionButton" relativePoint="TOPLEFT" x="-16" y="0"/>
+				</Anchors>
+				<Scripts>
+					<OnClick method="OnClick"/>
+				</Scripts>
+			</Button>
+			<Button parentKey="StopSessionButton" inherits="MagicButtonTemplate" text="IT_STOP_SESSION" mixin="ItemTrackerStopSessionButtonMixin" parentArray="Textures">
+				<Size x="90" y="22"/>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeKey="$parent.StartSessionButton" relativePoint="TOPRIGHT" x="16" y="0"/>
+				</Anchors>
+				<Scripts>
+					<OnClick method="OnClick"/>
+				</Scripts>
+			</Button>
+		</Frames>
+		<Scripts>
+			<OnLoad method="OnLoad"/>
+			<OnEvent method="OnEvent"/>
+			<OnShow method="OnShow"/>
+			<OnDragStart method="OnDragStart"/>
+			<OnDragStop method="OnDragStop"/>
+		</Scripts>
+	</Frame>
+</Ui>

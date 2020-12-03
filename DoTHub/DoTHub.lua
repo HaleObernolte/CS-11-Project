@@ -8,8 +8,6 @@ USE_WHITELIST_TOOLTIP = "When enabled, only spells manually specified in the whi
 WHITELIST_EDIT_INSTRUCTIONS = "|cFF808080Enter spell name or spell ID here...|r";
 
 local NO_NAME_FOUND = "Waiting for unit data...";
-local MAX_NAMEPLATES = 5; -- TODO: Enforce
-local MAX_DEBUFFS = 6; -- TODO: Enforce
 local NAMEPLATE_PADDING = -20;
 local DOT_HUB_BASE_HEIGHT = 160;
 local debugLinkedList = false;

@@ -1,0 +1,6 @@
+## Interface: 9002
+## Title: Item Tracker
+## Author: Hale Obernolte
+## SavedVariablesPerCharacter: IT_TRACKED_ITEMS, IT_SETTINGS
+
+ItemTracker.xml
