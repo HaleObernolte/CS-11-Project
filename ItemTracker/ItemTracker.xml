@@ -25,7 +25,7 @@
 					</Anchors>
 				</FontString>
 				<FontString parentKey="ValuePer" maxLines="1" inherits="GameFontNormal">
-					<Size x="50" y="0"/>
+					<Size x="60" y="0"/>
 					<Anchors>
 						<Anchor point="LEFT" relativeKey="$parent.Quantity" relativePoint="RIGHT" x="13" y="0"/>
 					</Anchors>
@@ -37,6 +37,10 @@
 				</FontString>
 			</Layer>
 		</Layers>
+		<Scripts>
+			<OnLoad method="OnLoad"/>
+			<OnClick method="OnClick"/>
+		</Scripts>
 	</Button>
 
 	<Frame name="ItemTrackerFrame" parent="UIParent" enableMouse="true" movable="true" mixin="ItemTrackerFrameMixin">
